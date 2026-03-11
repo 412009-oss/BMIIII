@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leo/need 健康管理 - 星乃一歌</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ichika-blue: #2c4ba9;
+            --ichika-light: #e6f0ff;
+            --ichika-accent: #ffcc00;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            color: #1e293b;
+        }
+
+        /* 標題動畫 */
+        .ichika-title {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            background: linear-gradient(to right, #ffffff, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        }
+
+        /* 角色立繪容器 - 模擬遊戲對話感 */
+        .char-display {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 500px;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.5s ease;
+            opacity: 0.95;
+        }
+
+        /* 磨砂玻璃面板 - 類似 ProSeka 的 UI 視窗 */
+        .main-panel {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 1.5rem;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+            margin-top: 180px;
+        }
+
+        /* 模擬 Leo/need 裝飾線 */
+        .band-line {
+            height: 4px;
+            background: linear-gradient(90deg, var(--ichika-blue), #60a5fa);
+            border-radius: 2px;
+            margin: 10px 0;
+        }
+
+        /* 輸入框樣式 */
+        .input-group input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--ichika-blue);
+            box-shadow: 0 0 0 4px rgba(44, 75, 169, 0.1);
+            background: #fff;
+        }
+
+        /* 計算按鈕 - 藍色漸層 */
+        .calc-btn {
+            background: linear-gradient(135deg, var(--ichika-blue) 0%, #1e40af 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            letter-spacing: 2px;
+        }
+
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
+        }
+
+        /* 呼吸效果 */
+        @keyframes ichika-breathe {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+        .breathe { animation: ichika-breathe 4s ease-in-out infinite; }
+
+        /* 遊戲對話框動畫 */
+        .dialogue-box {
+            animation: popIn 0.5s ease-out forwards;
+            background: #fff;
+            border-top: 4px solid var(--ichika-blue);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 星星裝飾 */
+        .star {
+            position: absolute;
+            color: var(--ichika-accent);
+            opacity: 0.6;
+            animation: twinkle 2s infinite alternate;
+        }
+        @keyframes twinkle {
+            from { opacity: 0.2; transform: scale(0.8); }
+            to { opacity: 0.8; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 角色區域 -->
+    <div id="ichikaWrapper" class="char-display breathe">
+        <!-- 使用星乃一歌風格的 SVG 佔位圖 (正式版可替換為官方立繪) -->
+        <img id="ichikaImg" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Hoshino&backgroundColor=b6e3f4&flip=true" 
+             alt="星乃一歌" class="h-full drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+    </div>
+
+    <!-- 背景星光 -->
+    <div class="star top-10 left-10 text-2xl">★</div>
+    <div class="star top-20 right-20 text-xl">★</div>
+    <div class="star bottom-40 left-1/4 text-lg">★</div>
+
+    <div class="max-w-md w-full relative">
+        <div class="text-center mb-6">
+            <h1 class="ichika-title text-4xl font-black italic">BMI CHECKER</h1>
+            <p class="text-blue-200 text-xs font-bold tracking-widest mt-1">FOR LEO/NEED SUPPORT</p>
+        </div>
+
+        <div class="main-panel p-8">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-ichika-blue font-bold text-sm">SYSTEM V1.0</span>
+                <span class="text-slate-400 text-[10px]">HEALTH MONITORING</span>
+            </div>
+            
+            <div class="band-line"></div>
+
+            <div class="space-y-6 mt-6">
+                <div class="input-group">
+                    <label class="block text-slate-500 text-xs font-bold mb-2 ml-1">身長 / HEIGHT (cm)</label>
+                    <input type="number" id="height" placeholder="165.0" step="0.1"
+                           class="w-full px-5 py-4 rounded-xl outline-none text-xl font-bold">
+                </div>
+                
+                <div class="input-group">
+                    <label class="block text-slate-500 text-xs font-bold mb-2 ml-1">體重 / WEIGHT (kg)</label>
+                    <input type="number" id="weight" placeholder="50.0" step="0.1"
+                           class="w-full px-5 py-4 rounded-xl outline-none text-xl font-bold">
+                </div>
+
+                <button onclick="calculateBMI()" 
+                        class="calc-btn w-full py-5 rounded-2xl font-black text-xl shadow-xl active:scale-95">
+                    測 定 開 始
+                </button>
+            </div>
+        </div>
+
+        <!-- 計算結果對話框 -->
+        <div id="resultBox" class="hidden mt-6 dialogue-box p-6 rounded-2xl shadow-2xl relative">
+            <div class="absolute -top-3 left-6 bg-blue-700 text-white text-[10px] px-3 py-1 font-bold rounded">
+                HOSHINO ICHIKA
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="text-center border-r pr-6">
+                    <span class="text-[10px] text-slate-400 font-bold block">RESULT</span>
+                    <div id="bmiVal" class="text-4xl font-black text-blue-800">22.0</div>
+                </div>
+                <div class="flex-1">
+                    <div id="statusLabel" class="inline-block px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold mb-2">
+                        NORMAL
+                    </div>
+                    <p id="ichikaQuote" class="text-slate-700 text-sm font-medium leading-relaxed italic">
+                        「嗯...數值正常。為了接下來的樂團特訓，體力是很重要的，繼續保持。」
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateBMI() {
+            const h = document.getElementById('height').value;
+            const w = document.getElementById('weight').value;
+            const resultBox = document.getElementById('resultBox');
+            const bmiVal = document.getElementById('bmiVal');
+            const statusLabel = document.getElementById('statusLabel');
+            const quote = document.getElementById('ichikaQuote');
+            const wrapper = document.getElementById('ichikaWrapper');
+
+            if (!h || !w || h <= 0 || w <= 0) {
+                return;
+            }
+
+            const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+            bmiVal.innerText = bmi;
+            resultBox.classList.remove('hidden');
+
+            // 簡單的反饋動畫
+            wrapper.style.transform = "translateX(-50%) scale(1.05)";
+            setTimeout(() => wrapper.style.transform = "translateX(-50%) scale(1)", 200);
+
+            let status = "";
+            let text = "";
+            let color = "";
+
+            if (bmi < 18.5) {
+                status = "過輕 / UNDERWEIGHT";
+                color = "bg-sky-400";
+                text = "「...有點太瘦了呢。雖然練習很重要，但如果不攝取足夠營養，吉他會彈不動的喔。要跟我一起去吃炒麵麵包嗎？」";
+            } else if (bmi < 24) {
+                status = "正常 / NORMAL";
+                color = "bg-blue-600";
+                text = "「數值很理想。看來你有好好管理自己的健康，這樣一來，就能長時間待在錄音室練習了。」";
+            } else if (bmi < 27) {
+                status = "過重 / OVERWEIGHT";
+                color = "bg-yellow-500";
+                text = "「稍微有一點超標了呢。雖然努力練習沒錯，但也別忘了適度運動。要不要...試著幫我搬搬看音箱？」";
+            } else {
+                status = "肥胖 / OBESE";
+                color = "bg-red-500";
+                text = "「...這個數據，可能需要調整一下生活節奏了。如果不維持體力， Leo/need 的現場演出會撐不住的。要從基礎體能訓練開始嗎？」";
+            }
+
+            statusLabel.innerText = status;
+            statusLabel.className = `inline-block px-3 py-1 rounded text-white text-[10px] font-bold mb-2 ${color}`;
+            quote.innerText = text;
+
+            // 自動滾動到結果
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leo/need 健康管理 - 星乃一歌</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ichika-blue: #2c4ba9;
+            --ichika-light: #e6f0ff;
+            --ichika-accent: #ffcc00;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            color: #1e293b;
+        }
+
+        /* 標題動畫 */
+        .ichika-title {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            background: linear-gradient(to right, #ffffff, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        }
+
+        /* 角色立繪容器 - 模擬遊戲對話感 */
+        .char-display {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 500px;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.5s ease;
+            opacity: 0.95;
+        }
+
+        /* 磨砂玻璃面板 - 類似 ProSeka 的 UI 視窗 */
+        .main-panel {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 1.5rem;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+            margin-top: 180px;
+        }
+
+        /* 模擬 Leo/need 裝飾線 */
+        .band-line {
+            height: 4px;
+            background: linear-gradient(90deg, var(--ichika-blue), #60a5fa);
+            border-radius: 2px;
+            margin: 10px 0;
+        }
+
+        /* 輸入框樣式 */
+        .input-group input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--ichika-blue);
+            box-shadow: 0 0 0 4px rgba(44, 75, 169, 0.1);
+            background: #fff;
+        }
+
+        /* 計算按鈕 - 藍色漸層 */
+        .calc-btn {
+            background: linear-gradient(135deg, var(--ichika-blue) 0%, #1e40af 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            letter-spacing: 2px;
+        }
+
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
+        }
+
+        /* 呼吸效果 */
+        @keyframes ichika-breathe {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+        .breathe { animation: ichika-breathe 4s ease-in-out infinite; }
+
+        /* 遊戲對話框動畫 */
+        .dialogue-box {
+            animation: popIn 0.5s ease-out forwards;
+            background: #fff;
+            border-top: 4px solid var(--ichika-blue);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 星星裝飾 */
+        .star {
+            position: absolute;
+            color: var(--ichika-accent);
+            opacity: 0.6;
+            animation: twinkle 2s infinite alternate;
+        }
+        @keyframes twinkle {
+            from { opacity: 0.2; transform: scale(0.8); }
+            to { opacity: 0.8; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 角色區域 -->
+    <div id="ichikaWrapper" class="char-display breathe">
+        <!-- 使用星乃一歌風格的 SVG 佔位圖 (正式版可替換為官方立繪) -->
+        <img id="ichikaImg" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Hoshino&backgroundColor=b6e3f4&flip=true" 
+             alt="星乃一歌" class="h-full drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+    </div>
+
+    <!-- 背景星光 -->
+    <div class="star top-10 left-10 text-2xl">★</div>
+    <div class="star top-20 right-20 text-xl">★</div>
+    <div class="star bottom-40 left-1/4 text-lg">★</div>
+
+    <div class="max-w-md w-full relative">
+        <div class="text-center mb-6">
+            <h1 class="ichika-title text-4xl font-black italic">BMI CHECKER</h1>
+            <p class="text-blue-200 text-xs font-bold tracking-widest mt-1">FOR LEO/NEED SUPPORT</p>
+        </div>
+
+        <div class="main-panel p-8">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-ichika-blue font-bold text-sm">SYSTEM V1.0</span>
+                <span class="text-slate-400 text-[10px]">HEALTH MONITORING</span>
+            </div>
+            
+            <div class="band-line"></div>
+
+            <div class="space-y-6 mt-6">
+                <div class="input-group">
+                    <label class="block text-slate-500 text-xs font-bold mb-2 ml-1">身長 / HEIGHT (cm)</label>
+                    <input type="number" id="height" placeholder="165.0" step="0.1"
+                           class="w-full px-5 py-4 rounded-xl outline-none text-xl font-bold">
+                </div>
+                
+                <div class="input-group">
+                    <label class="block text-slate-500 text-xs font-bold mb-2 ml-1">體重 / WEIGHT (kg)</label>
+                    <input type="number" id="weight" placeholder="50.0" step="0.1"
+                           class="w-full px-5 py-4 rounded-xl outline-none text-xl font-bold">
+                </div>
+
+                <button onclick="calculateBMI()" 
+                        class="calc-btn w-full py-5 rounded-2xl font-black text-xl shadow-xl active:scale-95">
+                    測 定 開 始
+                </button>
+            </div>
+        </div>
+
+        <!-- 計算結果對話框 -->
+        <div id="resultBox" class="hidden mt-6 dialogue-box p-6 rounded-2xl shadow-2xl relative">
+            <div class="absolute -top-3 left-6 bg-blue-700 text-white text-[10px] px-3 py-1 font-bold rounded">
+                HOSHINO ICHIKA
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="text-center border-r pr-6">
+                    <span class="text-[10px] text-slate-400 font-bold block">RESULT</span>
+                    <div id="bmiVal" class="text-4xl font-black text-blue-800">22.0</div>
+                </div>
+                <div class="flex-1">
+                    <div id="statusLabel" class="inline-block px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold mb-2">
+                        NORMAL
+                    </div>
+                    <p id="ichikaQuote" class="text-slate-700 text-sm font-medium leading-relaxed italic">
+                        「嗯...數值正常。為了接下來的樂團特訓，體力是很重要的，繼續保持。」
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateBMI() {
+            const h = document.getElementById('height').value;
+            const w = document.getElementById('weight').value;
+            const resultBox = document.getElementById('resultBox');
+            const bmiVal = document.getElementById('bmiVal');
+            const statusLabel = document.getElementById('statusLabel');
+            const quote = document.getElementById('ichikaQuote');
+            const wrapper = document.getElementById('ichikaWrapper');
+
+            if (!h || !w || h <= 0 || w <= 0) {
+                return;
+            }
+
+            const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+            bmiVal.innerText = bmi;
+            resultBox.classList.remove('hidden');
+
+            // 簡單的反饋動畫
+            wrapper.style.transform = "translateX(-50%) scale(1.05)";
+            setTimeout(() => wrapper.style.transform = "translateX(-50%) scale(1)", 200);
+
+            let status = "";
+            let text = "";
+            let color = "";
+
+            if (bmi < 18.5) {
+                status = "過輕 / UNDERWEIGHT";
+                color = "bg-sky-400";
+                text = "「...有點太瘦了呢。雖然練習很重要，但如果不攝取足夠營養，吉他會彈不動的喔。要跟我一起去吃炒麵麵包嗎？」";
+            } else if (bmi < 24) {
+                status = "正常 / NORMAL";
+                color = "bg-blue-600";
+                text = "「數值很理想。看來你有好好管理自己的健康，這樣一來，就能長時間待在錄音室練習了。」";
+            } else if (bmi < 27) {
+                status = "過重 / OVERWEIGHT";
+                color = "bg-yellow-500";
+                text = "「稍微有一點超標了呢。雖然努力練習沒錯，但也別忘了適度運動。要不要...試著幫我搬搬看音箱？」";
+            } else {
+                status = "肥胖 / OBESE";
+                color = "bg-red-500";
+                text = "「...這個數據，可能需要調整一下生活節奏了。如果不維持體力， Leo/need 的現場演出會撐不住的。要從基礎體能訓練開始嗎？」";
+            }
+
+            statusLabel.innerText = status;
+            statusLabel.className = `inline-block px-3 py-1 rounded text-white text-[10px] font-bold mb-2 ${color}`;
+            quote.innerText = text;
+
+            // 自動滾動到結果
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
