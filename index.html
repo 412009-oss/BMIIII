@@ -1,7 +1,315 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <meta charset="UTF-8"><!DOCTYPE html>
+<html lang="zh-TW">
+<head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一歌的健康練習室 - BMI 計算機</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ichika-primary: #33ccff;
+            --ichika-secondary: #0088ff;
+            --ichika-accent: #ff4d6d;
+            --ichika-bg: #0a0a1a;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--ichika-bg);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(51, 204, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(255, 77, 109, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景流動裝飾 */
+        .bg-lines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;a
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, var(--ichika-primary), transparent);
+            height: 1px;
+            width: 100%;
+            opacity: 0.1;
+            transform: rotate(-45deg);
+            animation: moveLine 10s infinite linear;
+        }
+        @keyframes moveLine {
+            0% { transform: rotate(-45deg) translateY(-500px); }
+            100% { transform: rotate(-45deg) translateY(500px); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .ichika-title {
+            font-family: 'Montserrat', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(to right, #fff, var(--ichika-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-box:focus-within {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--ichika-primary);
+            box-shadow: 0 0 20px rgba(51, 204, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .calc-btn {
+            background: linear-gradient(135deg, var(--ichika-primary), var(--ichika-secondary));
+            position: relative;
+            overflow: hidden;
+        }
+        .calc-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(45deg);
+            transition: 0.5s;
+        }
+        .calc-btn:hover::after {
+            left: 100%;
+        }
+
+        /* BMI 儀表盤樣式 */
+        .gauge-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .gauge-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 1s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: linear-gradient(90deg, #fbbf24, #34d399, #fbbf24, #f87171);
+            background-size: 400% 100%;
+        }
+
+        .ichika-icon {
+            filter: drop-shadow(0 0 10px var(--ichika-primary));
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-lines">
+        <div class="line" style="top: 10%; animation-delay: 0s;"></div>
+        <div class="line" style="top: 30%; animation-delay: 2s;"></div>
+        <div class="line" style="top: 60%; animation-delay: 4s;"></div>
+        <div class="line" style="top: 90%; animation-delay: 1s;"></div>
+    </div>
+
+    <div class="glass-card w-full max-w-lg p-10 fade-in">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="ichika-title text-4xl font-black tracking-tighter">BMI CHECKER</h1>
+                <p class="text-blue-300/60 text-xs font-bold uppercase tracking-widest mt-1">Health x Ichika Hoshino</p>
+            </div>
+            <!-- 吉他簡約圖標 -->
+            <svg class="ichika-icon w-12 h-12 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm1.15,15.54a2.38,2.38,0,0,1-2.3,0l-4.22-2.44a2.38,2.38,0,0,1,0-4.12l4.22-2.44a2.38,2.38,0,0,1,2.3,0l4.22,2.44a2.38,2.38,0,0,1,0,4.12Z"/>
+            </svg>
+        </div>
+
+        <div class="space-y-8">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 身高 -->
+                <div class="input-box rounded-2xl p-4">
+                    <label class="block text-[10px] font-bold text-blue-300 uppercase mb-1">Height / 身高</label>
+                    <div class="flex items-end">
+                        <input type="number" id="height" class="bg-transparent border-none text-3xl font-bold w-full focus:ring-0 p-0" placeholder="0">
+                        <span class="text-blue-400 font-bold ml-1">cm</span>
+                    </div>
+                </div>
+                <!-- 體重 -->
+                <div class="input-box rounded-2xl p-4">
+                    <label class="block text-[10px] font-bold text-blue-300 uppercase mb-1">Weight / 體重</label>
+                    <div class="flex items-end">
+                        <input type="number" id="weight" class="bg-transparent border-none text-3xl font-bold w-full focus:ring-0 p-0" placeholder="0">
+                        <span class="text-blue-400 font-bold ml-1">kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 性別切換 (更精美的按鈕) -->
+            <div class="flex p-1 bg-white/5 rounded-xl">
+                <button onclick="selectGender('f')" id="btn-f" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 bg-blue-500 shadow-lg shadow-blue-500/20">Female</button>
+                <button onclick="selectGender('m')" id="btn-m" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 text-gray-500">Male</button>
+            </div>
+
+            <button onclick="calculateBMI()" class="calc-btn w-full py-5 rounded-2xl font-black text-xl tracking-widest uppercase transition-all active:scale-95 shadow-2xl shadow-blue-500/40">
+                Check Result
+            </button>
+        </div>
+
+        <!-- 結果區 (預設隱藏) -->
+        <div id="result-area" class="hidden opacity-0 translate-y-10 transition-all duration-700 mt-10">
+            <div class="relative p-6 rounded-3xl bg-white/5 border border-white/10 overflow-hidden">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">BMI Index</span>
+                        <h2 id="bmi-value" class="text-6xl font-black text-white leading-none">22.4</h2>
+                    </div>
+                    <div id="status-tag" class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">
+                        Normal
+                    </div>
+                </div>
+
+                <!-- 視覺化進度條 -->
+                <div class="gauge-container">
+                    <div id="gauge-bar" class="gauge-bar"></div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between text-[10px] text-gray-500 font-bold uppercase">
+                        <span>Ideal Range</span>
+                        <span id="weight-range" class="text-blue-300">55 - 72 kg</span>
+                    </div>
+                    
+                    <!-- 一歌的對話框 -->
+                    <div class="relative bg-blue-500/10 border-l-4 border-blue-400 p-4 rounded-r-xl">
+                        <p class="text-[10px] font-bold text-blue-400 mb-1 italic">Hoshino Ichika says:</p>
+                        <p id="ichika-quote" class="text-sm text-blue-50 text-opacity-90 leading-relaxed">
+                            「練習雖然辛苦，但看到你這麼健康，我也覺得充滿動力了。」
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="fixed top-10 bg-red-500/80 backdrop-blur-md px-8 py-3 rounded-full text-sm font-bold opacity-0 transition-all duration-300 pointer-events-none z-50">
+        數值輸入好像有點問題喔...
+    </div>
+
+    <script>
+        let gender = 'f';
+
+        function selectGender(g) {
+            gender = g;
+            const bf = document.getElementById('btn-f');
+            const bm = document.getElementById('btn-m');
+            if(g === 'f') {
+                bf.className = "flex-1 py-2 rounded-lg text-sm font-bold bg-blue-500 shadow-lg shadow-blue-500/20";
+                bm.className = "flex-1 py-2 rounded-lg text-sm font-bold text-gray-500";
+            } else {
+                bm.className = "flex-1 py-2 rounded-lg text-sm font-bold bg-blue-500 shadow-lg shadow-blue-500/20";
+                bf.className = "flex-1 py-2 rounded-lg text-sm font-bold text-gray-500";
+            }
+        }
+
+        function calculateBMI() {
+            const h = parseFloat(document.getElementById('height').value);
+            const w = parseFloat(document.getElementById('weight').value);
+
+            if (!h || !w || h < 50 || w < 2) {
+                showToast();
+                return;
+            }
+
+            const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+            showResult(bmi, h);
+        }
+
+        function showResult(bmi, height) {
+            const area = document.getElementById('result-area');
+            const val = document.getElementById('bmi-value');
+            const tag = document.getElementById('status-tag');
+            const bar = document.getElementById('gauge-bar');
+            const quote = document.getElementById('ichika-quote');
+            const range = document.getElementById('weight-range');
+
+            // 顯示動畫
+            area.classList.remove('hidden');
+            setTimeout(() => {
+                area.classList.remove('opacity-0', 'translate-y-10');
+            }, 10);
+
+            val.innerText = bmi;
+            
+            // 理想範圍
+            const minW = (18.5 * ((height/100)**2)).toFixed(1);
+            const maxW = (24 * ((height/100)**2)).toFixed(1);
+            range.innerText = `${minW} - ${maxW} kg`;
+
+            // 進度條與狀態
+            let percent = (bmi / 40) * 100;
+            if (percent > 100) percent = 100;
+            bar.style.width = percent + '%';
+
+            if (bmi < 18.5) {
+                tag.innerText = "Underweight";
+                tag.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase bg-yellow-500 text-yellow-950";
+                quote.innerText = "「感覺你有點太瘦了... 練習雖然重要，但也要好好吃飯才有體力唱歌喔。」";
+            } else if (bmi < 24) {
+                tag.innerText = "Healthy";
+                tag.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase bg-green-500 text-green-950";
+                quote.innerText = "「嗯，這是一個很健康的數值呢。繼續保持，練習時也要記得補充水分喔。」";
+            } else if (bmi < 27) {
+                tag.innerText = "Overweight";
+                tag.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase bg-orange-500 text-orange-950";
+                quote.innerText = "「最近是不是稍微放鬆了點？沒關係，等下的結他練習再加把勁吧。」";
+            } else {
+                tag.innerText = "Obese";
+                tag.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase bg-red-500 text-red-950";
+                quote.innerText = "「雖然說健康最重要，但為了膝蓋負擔著想，我們一起規劃運動清單吧？」";
+            }
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.remove('opacity-0');
+            setTimeout(() => t.classList.add('opacity-0'), 3000);
+        }
+    </script>
+</body>
+</html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leo/need 健康管理 - 星乃一歌</title>
     <script src="https://cdn.tailwindcss.com"></script>
